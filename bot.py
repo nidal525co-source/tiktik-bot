@@ -18,11 +18,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     status_message = await update.message.reply_text("جاري تحميل المقطع، انتظر قليلاً... ⏳")
     
-    try:
-        # استخدام الـ API البديل والسريع لجلب المقطع بدون حظر
-       api_url = f"https://tikwm.com{url}"
+   try:
+        # البديل والسريع لجلب المقطع بدون حظر
+        api_url = f"https://tikwm.com{url}"
         response = requests.get(api_url).json()
-        
         video_url = response["data"]["play"]
         
             # إرسال الفيديو مباشرة للمستخدم
