@@ -48,7 +48,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     else:
         await update.message.reply_text("Please send a valid TikTok link.")
 
-def main():
+def main()
+    os.system("python -m pip install --upgrade yt-dlp")
     TOKEN = os.getenv("BOT_TOKEN")
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
