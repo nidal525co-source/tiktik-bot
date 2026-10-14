@@ -20,11 +20,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     try:
         # استخدام الـ API البديل والسريع لجلب المقطع بدون حظر
-        api_url = f"https://tikwm.com{url}"
+       api_url = f"https://tikwm.com{url}"
         response = requests.get(api_url).json()
         
-        if response.get("code") == 0:
-            video_url = response["data"]["play"]
+        video_url = response["data"]["play"]
+        
             # إرسال الفيديو مباشرة للمستخدم
             await update.message.reply_video(video=video_url, caption="تم التحميل بنجاح عبر بوتك الخاص! 🚀")
             await status_message.delete()
