@@ -1,63 +1,48 @@
-import logging
 import os
-import glob
+import logging
+import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-import yt_dlp
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-
-def download_tiktok(url):
-    ydl_opts = {
-        'format': 'bestvideo+bestaudio/best',
-        'outtmpl': 'video_%(id)s.%(ext)s',
-        'quiet': True,
-        'no_warnings': True,
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
-        base_name = os.path.splitext(filename)
-        possible_files = glob.glob(f"{base_name}.*")
-        if possible_files:
-            return possible_files[0]
-        return filename
+# إعداد السجلات
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Hello! Send me a TikTok link and I will download it for you.")
+    await update.message.reply_text("مرحباً بك! أرسل لي رابط مقطع تيك توك وسأقوم بتحميله فوراً 🎬")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_message = update.message.text
-    if "tiktok.com" in user_message:
-        status_message = await update.message.reply_text("Downloading, please wait...")
-        video_path = None
-        try:
-            video_path = download_tiktok(user_message)
-            with open(video_path, 'rb') as video_file:
-                await update.message.reply_video(video=video_file, caption="Downloaded successfully!")
+    url = update.message.text
+    if "tiktok.com" not in url:
+        await update.message.reply_text("يرجى إرسال رابط تيك توك صحيح.")
+        return
+
+    status_message = await update.message.reply_text("جاري تحميل المقطع، انتظر قليلاً... ⏳")
+    
+    try:
+        # استخدام الـ API البديل والسريع لجلب المقطع بدون حظر
+        api_url = f"https://tikwm.com{url}"
+        response = requests.get(api_url).json()
+        
+        if response.get("code") == 0:
+            video_url = response["data"]["play"]
+            # إرسال الفيديو مباشرة للمستخدم
+            await update.message.reply_video(video=video_url, caption="تم التحميل بنجاح عبر بوتك الخاص! 🚀")
             await status_message.delete()
-        except Exception as e:
-            logging.error(f"Error: {e}")
-            await status_message.edit_text("Sorry, an error occurred while downloading.")
-        finally:
-            if video_path and os.path.exists(video_path):
-                os.remove(video_path)
-    else:
-        await update.message.reply_text("Please send a valid TikTok link.")
+        else:
+            await status_message.edit_text("عذراً، فشل سحب الفيديو، تأكد من أن الحساب عام والمقطع ليس خاصاً.")
+    except Exception as e:
+        logging.error(f"Error: {e}")
+        await status_message.edit_text("حدث خطأ غير متوقع أثناء معالجة الرابط.")
 
 def main():
-    os.system("python -m pip install --upgrade yt-dlp")
     TOKEN = os.getenv("BOT_TOKEN")
     application = Application.builder().token(TOKEN).build()
+    
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("bot is running...")
-    application.run_polling()
+    
     print("Bot is running...")
     application.run_polling()
 
-if __name__ == '__main__':
+if _name_ == '_main_':
     main()
