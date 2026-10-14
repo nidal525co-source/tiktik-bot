@@ -49,14 +49,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text("Please send a valid TikTok link.")
 
 def main():
-    # وضعت لك علامات التنصيص الجاهزة لتضع التوكن الجديد داخلها مباشرة
-    TOKEN = "8886770977:AAF7sNsbMTfVAgKAzQ3fPmwBeYUG--i6UpE"
-    
+    TOKEN = os.getenv("BOT_TOKEN")
     application = Application.builder().token(TOKEN).build()
-    
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    
+    print("bot is running...")
+    application.run_polling()
     print("Bot is running...")
     application.run_polling()
 
